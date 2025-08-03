@@ -1,0 +1,70 @@
+# ===================================================================
+#                      ENVIRONMENT VARIABLES
+# Never commit secret keys or environment-specific configuration.
+# ===================================================================
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# You CAN commit a template file so others know what keys are needed.
+!/.env.example
+
+
+# ===================================================================
+#                         DEPENDENCIES
+# ===================================================================
+/node_modules
+
+
+# ===================================================================
+#                    BUILD & PRODUCTION FOLDERS
+# ===================================================================
+/dist
+/dist-ssr
+/build
+/.vercel
+/.output
+
+
+# ===================================================================
+#                     TOOLING & CACHE
+# ===================================================================
+# Vite-specific cache directory
+/.vite/
+
+# Testing coverage folder
+/coverage
+
+
+# ===================================================================
+#                          LOG FILES
+# ===================================================================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+
+# ===================================================================
+#               EDITOR & OPERATING SYSTEM FILES
+# ===================================================================
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# JetBrains
+.idea
+
+# Other
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
