@@ -17,17 +17,17 @@ const submitCode = (id, { language, code }) => axiosClient.post(`/submission/sub
 const getAllProblems = () => axiosClient.get('/problem/getAllProblem');
 
 const SUPPORTED_LANGUAGES = [
-    { id: 'python', display: 'Python', dbName: 'Python' },
-    { id: 'cpp', display: 'C++', dbName: 'C++' },  
-    { id: 'java', display: 'Java', dbName: 'Java' },
-    { id: 'javascript', display: 'JavaScript', dbName: 'Javascript' }
+    { id: 'Python', display: 'Python', dbName: 'python' },
+    { id: 'C++', display: 'C++', dbName: 'c++' },  
+    { id: 'Java', display: 'Java', dbName: 'java' },
+    { id: 'Javascript', display: 'JavaScript', dbName: 'javascript' }
 ];
 
 const ProblemPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [problem, setProblem] = useState(null);
-    const [language, setLanguage] = useState('python');
+    const [language, setLanguage] = useState('Python');
     const [code, setCode] = useState('');
     const [initialCode, setInitialCode] = useState(''); // Store initial code for reset
     const [result, setResult] = useState(null);
@@ -124,7 +124,7 @@ useEffect(() => {
         if (problem) {
             const currentLangConfig = SUPPORTED_LANGUAGES.find(lang => lang.id === language);
             if (currentLangConfig) {
-                const starterCodeObj = problem.startCode?.find(sc => sc.language === currentLangConfig.dbName);
+                const starterCodeObj = problem.startCode?.find(sc => sc.language === currentLangConfig.id);
                 const startCode = starterCodeObj?.initialCode || `// No starter code available for ${currentLangConfig.display}`;
                 setCode(startCode);
                 setInitialCode(startCode); // Store for reset functionality
@@ -149,21 +149,25 @@ useEffect(() => {
     };
 
     const handleCodeAction = async (actionType) => {
-        setIsLoading(true);
-        setResult(null);
-        const action = actionType === 'submit' ? submitCode : runCode;
-        try {
-            const { data } = await action(id, { language, code });
-            setResult(data);
-        } catch (err) {
-            console.error("API Error:", err.response?.data || err.message);
-            const errorMessage = err.response?.data?.message || 'An unexpected error occurred.';
-            setResult({ success: false, errorMessage: errorMessage, testCases: [] });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
+    setIsLoading(true);
+    setResult(null);
+    const action = actionType === 'submit' ? submitCode : runCode;
+    
+    // Get the display name for the current language
+    const currentLangConfig = SUPPORTED_LANGUAGES.find(lang => lang.id === language);
+    const languageToSend = currentLangConfig ? currentLangConfig.dbName : language;
+    
+    try {
+        const { data } = await action(id, { language: languageToSend, code });
+        setResult(data);
+    } catch (err) {
+        console.error("API Error:", err.response?.data || err.message);
+        const errorMessage = err.response?.data?.message || 'An unexpected error occurred.';
+        setResult({ success: false, errorMessage: errorMessage, testCases: [] });
+    } finally {
+        setIsLoading(false);
+    }
+};
     const getDifficultyColor = (difficulty) => {
         if (!difficulty) return 'text-gray-500 bg-gray-500/10 border-gray-500/20';
         switch (difficulty.toLowerCase()) {
