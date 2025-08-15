@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FiSun, FiMoon } from 'react-icons/fi';
-import { Link } from 'react-router-dom'; // Ensure you are using react-router-dom
+import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { userLogout } from '../redux/authSlice';
 import { signOut } from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { toggleTheme } from '../redux/themeSlice';
 
-// Separated reusable avatar component
+// Enhanced UserAvatar component with better fallback handling
 const UserAvatar = ({ user }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -22,13 +22,24 @@ const UserAvatar = ({ user }) => {
   const colorIndex = initial.charCodeAt(0) % colors.length;
   const bgColor = colors[colorIndex];
 
-  if (user?.photoURL && !imageError) {
+  // Debug log to see what photoURL we're getting
+  console.log('UserAvatar - photoURL:', user?.photoURL);
+  console.log('UserAvatar - firstName:', user?.firstName);
+
+  // Check if we have a valid photoURL and no error occurred
+  if (user?.photoURL && !imageError && user.photoURL.trim() !== '') {
     return (
       <img
         src={user.photoURL}
         alt={displayName}
         className="w-10 h-10 rounded-full object-cover border border-gray-300 shadow"
-        onError={() => setImageError(true)}
+        onError={() => {
+          console.log('Image failed to load:', user.photoURL);
+          setImageError(true);
+        }}
+        onLoad={() => {
+          console.log('Image loaded successfully:', user.photoURL);
+        }}
       />
     );
   }
@@ -71,13 +82,13 @@ const Header = () => {
       <div className="navbar container mx-auto px-4">
         <div className="navbar-start">
           <Link to="/" className="btn btn-ghost text-2xl md:text-3xl font-black tracking-tighter">
-            <span className="text-primary">Code</span>G
+            <span className="text-primary">Code</span>Quest
           </Link>
         </div>
 
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal px-1 space-x-2">
-            {['Problems', 'Contests', 'Discuss', 'Articles'].map((item) => (
+            {['Problems', 'Subscribe', 'Discussion', 'POTD'].map((item) => (
               <li key={item}>
                 <Link
                   to={`/${item.toLowerCase()}`}
@@ -117,8 +128,19 @@ const Header = () => {
               </>
             ) : (
               <>
-                <UserAvatar user={user} />
-                {/* ADDED: Admin Panel button for admin users on desktop */}
+                {/* Enhanced profile link with user info */}
+                <div className="flex items-center space-x-2">
+                  <Link 
+                    to="/profile" 
+                    aria-label="View Profile" 
+                    title="View Profile"
+                    className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                  >
+                    <UserAvatar user={user} />
+                    
+                  </Link>
+                </div>
+                
                 {user?.role === 'admin' && (
                   <Link to="/admin" className="btn btn-ghost btn-sm">
                     Admin Panel
@@ -138,7 +160,7 @@ const Header = () => {
               </svg>
             </label>
             <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52 space-y-1">
-              {['Problems', 'Contests', 'Discuss', 'Articles'].map((item) => (
+              {['Problems', 'Subscribe', 'Discussion', 'POTD'].map((item) => (
                 <li key={item}><Link to={`/${item.toLowerCase()}`}>{item}</Link></li>
               ))}
               <div className="divider my-1"></div>
@@ -149,20 +171,28 @@ const Header = () => {
                 </>
               ) : (
                 <>
+                  {/* Enhanced mobile profile link */}
                   <li>
-                    <div className="flex items-center px-4 py-2">
+                    <Link to="/profile" className="flex items-center justify-start w-full p-2">
                       <UserAvatar user={user} />
-                      <span className="ml-2 font-medium">{user?.firstName || 'User'}</span>
-                    </div>
+                      <div className="ml-3 flex flex-col">
+                        <span className="font-medium text-sm">
+                          {user?.firstName || user?.displayName || 'User'}
+                        </span>
+                        <span className="text-xs text-base-content/60">
+                          {user?.emailID || user?.email || 'View Profile'}
+                        </span>
+                      </div>
+                    </Link>
                   </li>
-                  {/* ADDED: Admin Panel button for admin users on mobile */}
+                  
                   {user && user?.role === 'admin' && (
                     <li>
-                      <Link to="/admin" className="btn btn-ghost w-full text-left">Admin Panel</Link>
+                      <Link to="/admin" className="btn btn-ghost w-full justify-start">Admin Panel</Link>
                     </li>
                   )}
                   <li>
-                    <button onClick={handleLogout} className="btn btn-ghost w-full text-left">Logout</button>
+                    <button onClick={handleLogout} className="btn btn-ghost w-full justify-start">Logout</button>
                   </li>
                 </>
               )}

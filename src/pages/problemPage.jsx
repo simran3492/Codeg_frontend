@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axiosClient from '../utils/axiosClient';
 import { ChevronLeft, ChevronRight, List, Sun, Moon, Bot, Shuffle, Play, Send, Code2, BookOpen, FileText, Trophy, Users, Star, ThumbsUp, ThumbsDown, RotateCcw } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 
 import SubmissionModal from './submitted'; // Import the new modal component
 import ChatAi from '../components/ChatAi';
+import Editorial from "../components/video"
 
 
 // ===================================================================================
@@ -25,6 +26,7 @@ const SUPPORTED_LANGUAGES = [
 
 const ProblemPage = () => {
     const { id } = useParams();
+    const location = useLocation();
     const navigate = useNavigate();
     const [problem, setProblem] = useState(null);
     const [language, setLanguage] = useState('Python');
@@ -101,36 +103,26 @@ useEffect(() => {
     }, [id]);
 
     // Fetch problem data
-    useEffect(() => {
-        const fetchProblem = async () => {
-            setIsLoadingProblem(true);
-            try {
-                const { data } = await getProblemById(id);
-                setProblem(data);
-            } catch (err) {
-                console.error("Failed to fetch problem", err);
-                setProblem(null);
-            } finally {
-                setIsLoadingProblem(false);
-            }
-        };
-        if (id) {
-            fetchProblem();
-        }
-    }, [id]);
+    // useEffect(() => {
+    //     const fetchProblem = async () => {
+    //         setIsLoadingProblem(true);
+    //         try {
+    //             const { data } = await getProblemById(id);
+    //             setProblem(data);
+    //         } catch (err) {
+    //             console.error("Failed to fetch problem", err);
+    //             setProblem(null);
+    //         } finally {
+    //             setIsLoadingProblem(false);
+    //         }
+    //     };
+    //     if (id) {
+    //         fetchProblem();
+    //     }
+    // }, [id]);
 
     // Set initial code when problem or language changes
-    useEffect(() => {
-        if (problem) {
-            const currentLangConfig = SUPPORTED_LANGUAGES.find(lang => lang.id === language);
-            if (currentLangConfig) {
-                const starterCodeObj = problem.startCode?.find(sc => sc.language === currentLangConfig.id);
-                const startCode = starterCodeObj?.initialCode || `// No starter code available for ${currentLangConfig.display}`;
-                setCode(startCode);
-                setInitialCode(startCode); // Store for reset functionality
-            }
-        }
-    }, [language, problem]);
+    
 
     // Auto-switch to result tab when result arrives
     useEffect(() => {
@@ -180,6 +172,64 @@ useEffect(() => {
 
     const getStatusClass = (success) => success ? 'text-green-500' : 'text-red-500';
 
+    useEffect(() => {
+    const fetchProblemLogic = async () => {
+        // console.log("1. [FETCH] Starting fetch. Path:", location.pathname);
+        setIsLoadingProblem(true);
+        setProblem(null); // Clear old problem data
+
+        try {
+            const path = location.pathname === "/potd"
+                ? `/problem/potd`
+                : `/problem/getParticularProblem?by=id&value=${id}`;
+            
+            // console.log("2. [FETCH] Making API call to:", path);
+            const response = await axiosClient.get(path);
+            // console.log("3. [FETCH] API Response Received:", response);
+
+            // --- THIS IS A CRITICAL CHECK ---
+            // The structure of the response for POTD might be different.
+            // This will correctly extract the problem data if it's nested, for any route.
+             const problemData = response.data.problem || response.data;
+            
+            // console.log("4. [FETCH] Extracted problem data:", problemData);
+
+            if (!problemData || !problemData._id) {
+                // This will catch cases where the API returns a 200 OK but with empty/invalid data
+                throw new Error("Problem data received from API is invalid or empty.");
+            }
+
+            setProblem(problemData);
+            // console.log("5. [FETCH] State update with setProblem has been called.");
+
+        } catch (err) {
+            // If anything fails in the 'try' block, we'll see it here.
+            console.error("!!! [FETCH] CRITICAL ERROR in fetchProblemLogic:", err);
+            setProblem(null); // Ensure we don't proceed with bad data
+        } finally {
+            // This block runs regardless of success or failure.
+            // console.log("6. [FETCH] FINALLY block reached. Setting loading to false.");
+            setIsLoadingProblem(false);
+        }
+    };
+
+    if (id || location.pathname === "/potd") {
+        fetchProblemLogic();
+    }
+}, [id, location.pathname]);
+
+    useEffect(() => {
+        if (problem) {
+            const currentLangConfig = SUPPORTED_LANGUAGES.find(lang => lang.id === language);
+            if (currentLangConfig) {
+                const starterCodeObj = problem.startCode?.find(sc => sc.language === currentLangConfig.id);
+                const startCode = starterCodeObj?.initialCode || `// No starter code available for ${currentLangConfig.display}`;
+                setCode(startCode);
+                setInitialCode(startCode); // Store for reset functionality
+            }
+        }
+    }, [language, problem]);
+
     // Enhanced navigation handlers using serial numbers
     const handlePrevious = async () => {
         // 1. Safety check to ensure the current problem and its serial number exist
@@ -200,7 +250,7 @@ useEffect(() => {
             
                 const response = await axiosClient.get(`/problem/getParticularProblem?by=serial&value=${serial_number - 1}`);
                 console.log(response)
-                const prevProblem=response.data._id
+                const prevProblem = response.data.problem ? response.data.problem._id : response.data._id;
       // 4. From the response, fetch the _id and navigate to that problem's page
             if (prevProblem ) {
                 navigate(`/problems/${prevProblem}`);
@@ -226,7 +276,7 @@ useEffect(() => {
             
                 const response = await axiosClient.get(`/problem/getParticularProblem?by=serial&value=${serial_number + 1}`);
                 console.log(response)
-                const nextProblem=response.data._id
+                const nextProblem = response.data.problem ? response.data.problem._id : response.data._id;
       // 4. From the response, fetch the _id and navigate to that problem's page
             if (nextProblem ) {
                 navigate(`/problems/${nextProblem}`);
@@ -351,15 +401,40 @@ useEffect(() => {
                         </div>
                     </div>
                 );
-            case 'editorial':
-                return (
-                    <div className="p-6 h-full flex items-center justify-center">
-                        <div className={`text-center ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>
-                            <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                            <p className="text-lg">Editorial coming soon...</p>
-                        </div>
-                    </div>
-                );
+            // In ProblemPage.jsx -> renderTabContent()
+
+case 'editorial':
+    // --- FINAL DIAGNOSTIC LOG ---
+    // This will show us the exact object being used for the conditional render.
+    // console.log('Rendering Editorial Tab. The `problem` object is:', problem);
+     console.log('--- The "editorial" case is definitely running! ---');
+
+    return (
+        <div className="p-6 space-y-6 h-full flex flex-col">
+            {/* Header section */}
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                    <FileText className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                    <h1 className="text-xl font-semibold text-black dark:text-white">Editorial</h1>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">A video explanation of the solution approach.</p>
+                </div>
+            </div>
+
+            {/* 
+              This is the container for your video.
+              Notice there is NO data-aos attribute here.
+            */}
+            <div className="flex-1 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">
+                <Editorial 
+                    secureUrl={problem.secureUrl} 
+                    thumbnailUrl={problem.thumbnailUrl} 
+                    duration={problem.duration} 
+                />
+            </div>
+        </div>
+    );
             case 'solutions':
                 return (
                     <div className="h-full flex flex-col overflow-y-scroll overflow-hidden ">

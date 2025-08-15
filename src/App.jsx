@@ -17,6 +17,13 @@ import UpdateProblemPage from "./admin/updateproblem.jsx";
 import EditProblemPage from "./admin/editproblem.jsx";
 import AdminDelete from "./admin/deleteproblem.jsx";
 import ManageUsers from "./admin/manageuser.jsx";
+import ForumPage from "./pages/discussion";
+import QuestionDetailPage from "./pages/QuestionDetailPage";
+import AskQuestionPage from "./pages/AskQuestionPage";
+import Paywall from "./components/payment";
+import AdminUpload from "./admin/AdminUpload.jsx";
+import AdminVideo from "./admin/AdminVideo.jsx";
+import ProfilePage from "./pages/profile";
 
 function App(){
   
@@ -57,8 +64,13 @@ if (loading) {
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login></Login>}></Route>
         <Route path="/signup" element={isAuthenticated ? <Navigate to="/" /> : <Signup></Signup>}></Route>
         <Route path="/problems" element={<Problems></Problems>}></Route>
+        <Route path="/discussion" element={isAuthenticated ?<ForumPage></ForumPage>: <Navigate to="/login"></Navigate>}></Route>
+        <Route path="/profile" element={isAuthenticated ? <ProfilePage></ProfilePage>: <Navigate to="/login"></Navigate>}></Route>
+        <Route path="/question/:id" element={isAuthenticated ?<QuestionDetailPage></QuestionDetailPage>: <Navigate to="/login"></Navigate>}></Route>
+        <Route path="/ask-question" element={isAuthenticated ?<AskQuestionPage />: <Navigate to="/login"></Navigate>} />
       </Route>
          <Route path="/problems/:id" element={<ProblemPage></ProblemPage>}></Route>
+         <Route path="/potd" element={<ProblemPage></ProblemPage>}></Route>
          <Route  element={isAuthenticated && user?.role==="admin"?<AdminLayout></AdminLayout>:<Navigate to="/" />}>
          <Route path="/admin" element={<AdminDashboard></AdminDashboard>}></Route>
          <Route path="/admin/create" element={<AdminCreateProblem></AdminCreateProblem>}></Route>
@@ -66,7 +78,10 @@ if (loading) {
          <Route path="/admin/update/editproblem/:id" element={<EditProblemPage></EditProblemPage>}></Route>
          <Route path="/admin/delete" element={<AdminDelete></AdminDelete>}></Route>
          <Route path="/admin/manage" element={<ManageUsers></ManageUsers>}></Route>
+         <Route path="/admin/video" element={isAuthenticated && user?.role === 'admin' ? <AdminVideo /> : <Navigate to="/" />} />
+         <Route path="/admin/upload/:problemId" element={isAuthenticated && user?.role === 'admin' ? <AdminUpload /> : <Navigate to="/" />} />
          </Route>
+         <Route path="/subscribe" element={isAuthenticated ? <Paywall /> : <Navigate to="/login"></Navigate>}></Route>
          
 
     </Routes>

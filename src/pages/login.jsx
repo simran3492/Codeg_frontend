@@ -74,7 +74,7 @@ function Login() {
       <div className="hidden lg:flex flex-col gap-6 animate-fade-in-left">
         <div className="flex items-center gap-3">
           <Code2 className="h-10 w-10 text-blue-600" />
-          <h1 className={`text-4xl font-bold ${mode === 'dark' ? 'text-white' : 'text-gray-800'}`}>CodeG</h1>
+          <h1 className={`text-4xl font-bold ${mode === 'dark' ? 'text-white' : 'text-gray-800'}`}>CodeQuest</h1>
         </div>
         <h2 className={`text-3xl font-bold ${mode === 'dark' ? 'text-white' : 'text-gray-700'}`}>
           Empowering the <span className="text-blue-600">Future of Coding</span>

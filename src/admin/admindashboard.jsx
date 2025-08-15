@@ -41,6 +41,15 @@ function AdminDashboard() {
       color: 'btn-error',
       bgColor: 'bg-secondary/10',
       route: '/admin/manage'
+    },
+    {
+      id: 'video',
+      title: 'Manage Videos',
+      description: 'Delete And Upload Videos',
+      icon: Edit,
+      color: 'btn-error',
+      bgColor: 'bg-primary/10',
+      route: '/admin/video'
     }
   ];
 

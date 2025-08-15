@@ -9,7 +9,7 @@ const CodeGLogo= ({ className }) => (
     <div className={`text-5xl md:text-6xl font-extrabold tracking-tight ${className}`}>
         <span className="text-blue-600">Code</span>
         {/* Add a little space between the words */}
-        <span className="ml-3">G</span>
+        <span className="ml-3">Quest</span>
     </div>
 );
 
