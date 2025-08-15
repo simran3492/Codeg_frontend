@@ -69,7 +69,7 @@ function Problems() {
     const fetchSolvedProblems = async () => {
       try {
         const { data } = await axiosClient.get('/problem/solvedAllProblembyUser');
-        setSolvedProblems(data);
+        setSolvedProblems(data.submissions || []);
       } catch (error) {
         console.error('Error fetching solved problems:', error);
       }
