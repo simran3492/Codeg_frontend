@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { Link } from 'react-router';
 import { CheckBadgeIcon } from '@heroicons/react/24/solid';
-import Tag from './Tag';
+import Tag from './tag';
 import UserAvatar from './UserAvatar';
 
 const DiscussionCard = ({ question }) => {
