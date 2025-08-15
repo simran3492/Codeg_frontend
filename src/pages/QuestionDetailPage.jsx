@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import AnswerCard from '../components/question/AnswerCard';
 import QuestionBody from '../components/question/QuestionBody';
-import AnswerForm from '../components/question/Answerform';
+import AnswerForm from '../components/question/AnswerForm';
 import QuestionHeader from '../components/question/QuestionHeader';
 
 import AOS from 'aos';
